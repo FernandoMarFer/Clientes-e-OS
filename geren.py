@@ -67,11 +67,11 @@ def exportar_clientes_excel():
     ws = wb.active
     ws.title = "Clientes"
 
-    # Cabeçalhos (ajustados à sua tabela)
+    # Colunas:
     colunas = ["ID", "Nome", "Telefone", "Cidade", "CPF"]
     ws.append(colunas)
 
-    # Dados
+    # Todos os dados
     for linha in dados:
         ws.append(linha)
 
@@ -111,7 +111,7 @@ def exportar_os_excel():
 
 
 
-# Separa as janelas em cada uma
+# Parte que separa as janelas cada botão abre uma 
 
 def janela_cadastrar_cliente():
     win = tk.Toplevel()
@@ -143,7 +143,7 @@ def janela_cadastrar_cliente():
             messagebox.showerror("Erro", "Preencha todos os campos.")
             return
 
-        # 🔹 Validação de CPF e telefone: apenas números e com 11 dígitos
+        # Validar o cpf e telefone tendo 11 digitos
         if not cpf_val.isdigit() or len(cpf_val) != 11:
             messagebox.showerror("Erro", "O CPF deve conter exatamente 11 números.")
             return
@@ -249,7 +249,7 @@ def janela_criar_os():
 
             conn, cursor = conectar()
 
-            # 🔹 Busca cidade e telefone automaticamente pelo ID do cliente
+            # Linka a cidade e telefone pelo id
             cursor.execute("SELECT cidade, telefone FROM Clientes WHERE id = ?", (cliente_id,))
             dados_cliente = cursor.fetchone()
 
@@ -267,7 +267,7 @@ def janela_criar_os():
                 VALUES (?, ?, ?, ?, ?, ?, ?)
             """, (numero, data, cliente_id, cidade, telefone, equipamentos, preco_total_os))
 
-            # 🔹 Insere peças na tabela Pecas
+            # Coloca as peças
             for nome, qtd, unit, total in pecas:
                 cursor.execute("""
                     INSERT INTO Pecas (os_numero, nome_peca, preco)
@@ -282,7 +282,6 @@ def janela_criar_os():
         except Exception as e:
             messagebox.showerror("Erro", f"Verifique os dados inseridos.\n{e}")
 
-    #tk.Button(win, text="Adicionar Peças", command=adicionar_pecas).grid(row=len(campos), column=0, pady=10)
     tk.Button(win, text="Salvar OS", command=salvar).grid(row=len(campos), column=0, pady=10)
 def janela_editar_os():
     win = tk.Toplevel()
@@ -343,7 +342,7 @@ def janela_editar_os():
                        (numero, nome, qtd, unit, total))
         conn.commit()
 
-        # Atualiza o total da OS
+        
         cursor.execute("SELECT SUM(preco_total) FROM Pecas WHERE os_numero = ?", (numero,))
         total_os = cursor.fetchone()[0] or 0
         cursor.execute("UPDATE OS SET preco_total = ? WHERE numero = ?", (total_os, numero))
@@ -379,7 +378,7 @@ def janela_editar_os():
             WHERE id = ?
         """, (novo_nome, nova_qtd, novo_unit, novo_total, pid))
 
-        # Atualiza o total da OS
+       
         numero = numero_entry.get().strip()
         cursor.execute("SELECT SUM(preco_total) FROM Pecas WHERE os_numero = ?", (numero,))
         total_os = cursor.fetchone()[0] or 0
@@ -403,7 +402,7 @@ def janela_editar_os():
         conn, cursor = conectar()
         cursor.execute("DELETE FROM Pecas WHERE id = ?", (pid,))
 
-        # Atualiza total da OS
+    
         numero = numero_entry.get().strip()
         cursor.execute("SELECT SUM(preco_total) FROM Pecas WHERE os_numero = ?", (numero,))
         total_os = cursor.fetchone()[0] or 0
@@ -415,7 +414,7 @@ def janela_editar_os():
         carregar_pecas()
         messagebox.showinfo("Sucesso", "Peça removida com sucesso!")
 
-    # Botões
+    
     tk.Button(win, text="Carregar Peças", command=carregar_pecas, bg="#2196F3", fg="white").grid(row=1, column=0, pady=5)
     tk.Button(win, text="Adicionar Peça", command=adicionar_peca, bg="#4CAF50", fg="white").grid(row=3, column=0, pady=5)
     tk.Button(win, text="Editar Peça", command=editar_peca, bg="#FFC107", fg="black").grid(row=3, column=1, pady=5)
@@ -428,13 +427,13 @@ def janela_listar_os():
     win.title("Lista de OS")
     win.geometry("850x600")
 
-    # Frame principal com botão
+    
     top_frame = tk.Frame(win)
     top_frame.pack(fill="x", pady=10)
 
     tk.Label(top_frame, text="📋 Lista de Ordens de Serviço", font=("Arial", 14, "bold")).pack(side="left", padx=10)
 
-    # Botão de exportar
+   
     def exportar_excel():
         conn, cursor = conectar()
         cursor.execute('''
@@ -459,7 +458,7 @@ def janela_listar_os():
     tk.Button(top_frame, text="Exportar para Excel", command=exportar_excel, bg="#4CAF50", fg="white").pack(side="right", padx=10)
     
 
-    # Área com rolagem
+   
     canvas = tk.Canvas(win)
     scrollbar = ttk.Scrollbar(win, orient="vertical", command=canvas.yview)
     scroll_frame = tk.Frame(canvas)
@@ -477,7 +476,7 @@ def janela_listar_os():
     canvas.pack(side="left", fill="both", expand=True)
     scrollbar.pack(side="right", fill="y")
 
-    # Buscar dados do banco
+ 
     conn, cursor = conectar()
     cursor.execute('''
         SELECT OS.numero, OS.data, Clientes.nome, OS.cidade, OS.telefone, OS.equipamentos, OS.preco_total, OS.status
@@ -491,36 +490,36 @@ def janela_listar_os():
         tk.Label(scroll_frame, text="Nenhuma OS cadastrada ainda.", font=("Arial", 12, "italic"), fg="gray").pack(pady=20)
         return
 
-    # Criar um "card" visual para cada OS
+   
     for os_item in ordens:
         card = tk.Frame(scroll_frame, bg="white", relief="groove", borderwidth=2)
         card.pack(fill="x", padx=15, pady=10)
 
         numero, data, cliente, cidade, telefone, equip, total, status = os_item
-        # 🔹 Buscar peças relacionadas a esta OS
+       
         conn, cursor = conectar()
         cursor.execute("SELECT nome_peca FROM Pecas WHERE os_numero = ?", (numero,))
         pecas_lista = [linha[0] for linha in cursor.fetchall()]
         conn.close()
 
-        # 🔹 Montar texto das peças (caso existam)
+       
         if pecas_lista:
             pecas_texto = ", ".join(pecas_lista)
         else:
             pecas_texto = "Nenhuma peça cadastrada"
 
 
-        # Cabeçalho
+        
         tk.Label(card, text=f"OS Nº {numero} — {cliente}", bg="white", font=("Arial", 12, "bold"), anchor="w").pack(fill="x", padx=10, pady=5)
 
-        # Informações
-        tk.Label(card, text=f"📅 Data: {data}", bg="white", anchor="w").pack(fill="x", padx=15)
-        tk.Label(card, text=f"🏙️ Cidade: {cidade}", bg="white", anchor="w").pack(fill="x", padx=15)
-        tk.Label(card, text=f"📞 Telefone: {telefone}", bg="white", anchor="w").pack(fill="x", padx=15)
-        tk.Label(card, text=f"🔧 Equipamento: {equip}", bg="white", anchor="w").pack(fill="x", padx=15)
-        tk.Label(card, text=f"🧩 Peças: {pecas_texto}", bg="white", anchor="w").pack(fill="x", padx=15)
-        tk.Label(card, text=f"💰 Total: R${total:.2f}", bg="white", anchor="w").pack(fill="x", padx=15)
-        tk.Label(card, text=f"📦 Status: {status}", bg="white", anchor="w", fg="blue").pack(fill="x", padx=15, pady=(0,10))
+    
+        tk.Label(card, text=f" Data: {data}", bg="white", anchor="w").pack(fill="x", padx=15)
+        tk.Label(card, text=f" Cidade: {cidade}", bg="white", anchor="w").pack(fill="x", padx=15)
+        tk.Label(card, text=f" Telefone: {telefone}", bg="white", anchor="w").pack(fill="x", padx=15)
+        tk.Label(card, text=f" Equipamento: {equip}", bg="white", anchor="w").pack(fill="x", padx=15)
+        tk.Label(card, text=f" Peças: {pecas_texto}", bg="white", anchor="w").pack(fill="x", padx=15)
+        tk.Label(card, text=f" Total: R${total:.2f}", bg="white", anchor="w").pack(fill="x", padx=15)
+        tk.Label(card, text=f" Status: {status}", bg="white", anchor="w", fg="blue").pack(fill="x", padx=15, pady=(0,10))
 
         
 
@@ -560,7 +559,7 @@ def janela_procurar_cliente():
     nome_entry = tk.Entry(win)
     nome_entry.pack(pady=5)
 
-    # Tabela de resultados
+    
     tree = ttk.Treeview(win, columns=("ID", "Nome", "Telefone", "Cidade", "CPF"), show="headings")
     for col in tree["columns"]:
         tree.heading(col, text=col)
@@ -568,7 +567,7 @@ def janela_procurar_cliente():
     tree.pack(fill="both", expand=True, pady=10)
 
     def procurar():
-        # Limpa resultados anteriores
+        
         for item in tree.get_children():
             tree.delete(item)
 
@@ -589,7 +588,7 @@ def janela_procurar_cliente():
             for row in resultados:
                 tree.insert("", tk.END, values=row)
 
-    # 🔹 Botão precisa ser criado depois da função 'procurar'
+  
     tk.Button(win, text="Procurar", command=procurar).pack(pady=5)
 
     
@@ -618,12 +617,12 @@ def janela_remover_os():
             conn.close()
             return
 
-        # Confirmação
+        
         if not messagebox.askyesno("Confirmar", f"Tem certeza que deseja remover a OS Nº {numero}?"):
             conn.close()
             return
 
-        # Exclui as peças associadas e depois a OS
+        
         cursor.execute("DELETE FROM Pecas WHERE os_numero = ?", (numero,))
         cursor.execute("DELETE FROM OS WHERE numero = ?", (numero,))
 
@@ -639,7 +638,7 @@ def janela_remover_os():
 
 
 
-# Area principal
+# Front principal
 
 
 janela = tk.Tk()
