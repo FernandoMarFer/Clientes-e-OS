@@ -2,7 +2,6 @@ import tkinter as tk
 from tkinter import messagebox, ttk, simpledialog
 import sqlite3
 from datetime import datetime
-import openpyxl
 from openpyxl import Workbook
 import pandas as pd
 
